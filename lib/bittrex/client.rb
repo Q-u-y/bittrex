@@ -23,6 +23,11 @@ module Bittrex
         if key
           req.params[:apikey]   = key
           req.params[:nonce]    = nonce
+          url = Faraday::Connection.new.build_exclusive_url(
+            req.path,
+            req.params,
+            req.options.params_encoder
+          ).to_s
           req.headers[:apisign] = signature(url, nonce)
         end
       end
@@ -33,7 +38,7 @@ module Bittrex
     private
 
     def signature(url, nonce)
-      OpenSSL::HMAC.hexdigest('sha512', secret, "#{url}?apikey=#{key}&nonce=#{nonce}")
+      OpenSSL::HMAC.hexdigest('sha512', secret, url)
     end
 
     def connection
